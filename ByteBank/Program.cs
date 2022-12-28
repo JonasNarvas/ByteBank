@@ -29,8 +29,8 @@ namespace byteBank;
         Console.WriteLine("2 - Alterar senha");
         Console.WriteLine("3 - Fazer um depósito");
         Console.WriteLine("4 - Sacar dinheiro");
-        Console.WriteLine("5 - Ver seu extrato bancário");
-        Console.WriteLine("0 - Voltar para o menu anterior");
+        Console.WriteLine("5 - Fazer uma transferência");
+        Console.WriteLine("0 - Voltar ao menu anterior");
         Console.WriteLine("-----------------------------");
         Console.Write("Digite a opção desejada: ");
     }
@@ -57,6 +57,7 @@ namespace byteBank;
             if (resposta == 1)
             {
                 tipoDaConta.Add("Conta Corrente");
+                instituicao.Add("");
             }
             else if (resposta == 2)
             {
@@ -72,7 +73,7 @@ namespace byteBank;
         }
 
         
-        static void deletarCliente(List<string> nome, List<string> cpf,List<string> tipoDaConta, List<string> senha, List<double> saldo, List<int> ID)
+        static void deletarCliente(List<string> nome, List<string> cpf,List<string> tipoDaConta,List<string>instituicao, List<string> senha, List<double> saldo, List<int> ID)
         {
         Console.Write("Digite o cpf do usuário a ser deletado: ");
         string idDelete = Console.ReadLine();
@@ -87,23 +88,27 @@ namespace byteBank;
             cpf.Remove(idDelete);
             nome.RemoveAt(indexParaValidar);
             tipoDaConta.RemoveAt(indexParaValidar);
+            instituicao.RemoveAt(indexParaValidar);
             senha.RemoveAt(indexParaValidar);
             saldo.RemoveAt(indexParaValidar);
             ID.RemoveAt(indexParaValidar);
         }
         }
                         
-        static void detalhesDeUsuario(List<string> nome, List<string> cpf, List<string> tipoDaConta, List<double> saldo)
+        static void detalhesDeUsuario(List<string> nome, List<string> cpf, List<string> tipoDaConta,List<string> instituicao, List<double> saldo)
         {
         Console.Write("Digite o cpf do usuário a ser apresentado: ");
-        string idDelete = Console.ReadLine();
-        int indexParaValidar = cpf.FindIndex(cpf => cpf == idDelete);
+        string cpfParaValidar = Console.ReadLine();
+        int indexParaValidar = cpf.FindIndex(x => x == cpfParaValidar);
         if (indexParaValidar == -1)
         {
             Console.WriteLine("CPF não encontrado");
 
         }
-        Console.WriteLine($"CPF: {cpf[indexParaValidar]} | Titular da conta: {nome[indexParaValidar]} | Tipo da Conta:{tipoDaConta[indexParaValidar]} | Saldo: R${saldo[indexParaValidar]:F2}");
+        else
+        {
+            Console.WriteLine($"CPF: {cpf[indexParaValidar]} | Titular da conta: {nome[indexParaValidar]} | Tipo da Conta:{tipoDaConta[indexParaValidar]} | Instituição de ensino: {instituicao[indexParaValidar]} | Saldo: R${saldo[indexParaValidar]:F2}");
+        }
         }
         static void apresentarTodasAsContas(List<string> nome, List<string> cpf,List<string> tipoDaConta, List<double> saldo, List<int> ID)
         {
@@ -127,7 +132,7 @@ namespace byteBank;
         List<double> saldo = new List<double>();
         List<string> tipoDaConta = new List<string>();
         List<string> instituicao = new List<string>();
-        List<string> usuario = new List<string>();
+        
         
         Console.WriteLine("SEJA BEM VINDO(A)");
 
@@ -142,9 +147,9 @@ namespace byteBank;
             {
                 case 0: Console.WriteLine("Encerrando o programa..."); break;
                 case 1: versaoDaConta(tipoDaConta, instituicao); cadastrarCliente(nome, cpf, senha, saldo, ID); break;
-                case 2: deletarCliente(nome, cpf, tipoDaConta, senha, saldo, ID); break;
+                case 2: deletarCliente(nome, cpf, tipoDaConta,instituicao, senha, saldo, ID); break;
                 case 3: apresentarTodasAsContas(nome, cpf, tipoDaConta, saldo, ID); break;
-                case 4: detalhesDeUsuario(nome, cpf, tipoDaConta, saldo); break;
+                case 4: detalhesDeUsuario(nome, cpf, tipoDaConta,instituicao, saldo); break;
                 case 5: quantiaNoBanco(saldo); break;
                 case 6:
                     Console.Write("Digite o cpf: ");
@@ -158,11 +163,12 @@ namespace byteBank;
                             menuConta(); opt = int.Parse(Console.ReadLine());
                             switch (opt)
                             {
-                                case 0: Console.WriteLine("Voltando para o menu anterior..."); break;
-                                case 1: break;
+                                case 0: Console.WriteLine("Voltando ao menu anterior..."); break;
+                                case 1: trocarTipoDeConta(cpf, tipoDaConta, instituicao, cpfValidar); break;
                                 case 2: alterarSenha(cpf, senha, cpfValidar); break;
                                 case 3: fazerDeposito(cpf, saldo, cpfValidar); break;
                                 case 4: fazerSaque(cpf,saldo, cpfValidar); break;
+                                case 5: fazerTransferencia(cpf, nome, saldo, cpfValidar); break;
 
 
                             }
@@ -212,7 +218,9 @@ namespace byteBank;
         {
             Console.Write("Qual é o valor do depósito? ");
             double valor = double.Parse(Console.ReadLine());
-            saldo[indexParaValidar] = valor;
+            saldo[indexParaValidar] += valor;
+            Console.WriteLine("Depósito realizado com sucesso!");
+            Console.WriteLine($"Saldo atual: {saldo[indexParaValidar]}");
         }
             
      }
@@ -227,7 +235,17 @@ namespace byteBank;
         {
             Console.Write("Qual é o valor do saque que quer fazer? ");
             double valor = double.Parse(Console.ReadLine());
-            saldo[indexParaValidar] -= valor;
+            if (valor > saldo[indexParaValidar])
+            {
+                Console.WriteLine("Não é possível realizar esta transação");
+            }
+            else
+            {
+                saldo[indexParaValidar] -= valor;
+                Console.WriteLine("Saque realizado com sucesso!");
+                Console.WriteLine($"Saldo atual: {saldo[indexParaValidar]}");
+            }
+            
 
         }
     }
@@ -262,6 +280,87 @@ namespace byteBank;
             }while(senhaAtual != senha[indexParaValidar]);
         }
         }
+    static void trocarTipoDeConta(List<string>cpf, List<string>tipoDaConta,List<string> instituicao, string cpfValidar)
+    {
+        int indexParaValidar = cpf.FindIndex(cpf => cpf == cpfValidar);
+        if (indexParaValidar == -1)
+        {
+            Console.WriteLine("CPF não encontrado");
+        }
+        else
+        {
+            if (tipoDaConta[indexParaValidar] == "Conta Universitária")
+            {
+                Console.WriteLine("Deseja trocar o tipo de conta para Conta Corrente?");
+                Console.Write("[1] - SIM  || [2] - NÃO ");
+                int valida = int.Parse(Console.ReadLine());
+                if(valida != 1 && valida != 2)
+                {
+                    Console.WriteLine("Opção Inválida! ");
+                }else if(valida == 1)
+                {
+                    tipoDaConta[indexParaValidar] = "Conta Corrente";
+                    instituicao[indexParaValidar] = null;
+                    Console.WriteLine("Operação realizada com sucesso!");
+                }
+                else if (valida == 2) Console.WriteLine("Cancelando operação...");
+            }else if (tipoDaConta[indexParaValidar]== "Conta Corrente")
+            {
+                Console.WriteLine("Deseja trocar o tipo de conta para Conta Universitária?");
+                Console.Write("[1] - SIM  || [2] - NÃO ");
+                int valida = int.Parse(Console.ReadLine());
+                if (valida != 1 && valida != 2)
+                {
+                    Console.WriteLine("Opção Inválida! ");
+                }
+                else if (valida == 1)
+                {
+                    Console.Write("Digite a instituição de ensino: ");
+                    instituicao[indexParaValidar] = Console.ReadLine();
+                    tipoDaConta[indexParaValidar] = "Conta Universitária";
+                    Console.WriteLine("Operação realizada com sucesso!");
+
+                }
+            }
+            
+        }
+    }
+     static void fazerTransferencia(List<string>cpf,List<string> nome, List<double> saldo, string cpfValidar)
+        {
+            int indexParaValidar = cpf.FindIndex(cpf => cpf == cpfValidar);
+            if (indexParaValidar == -1)
+            {
+                Console.WriteLine("CPF não encontrado");
+            }
+            else
+            {
+                Console.Write("Qual é o cpf da conta para qual deseja transferir? ");
+                string contapTransferir = Console.ReadLine();
+                int indexParaTranferir = cpf.FindIndex(x => x == contapTransferir);
+                if(indexParaTranferir == -1)
+                {
+                    Console.WriteLine("CPF não encontrado");
+                }
+                else
+                {
+                    Console.Write($"Qual o valor que deseja tranferir para {nome[indexParaTranferir]}? ");
+                    double valorTransferencia = double.Parse(Console.ReadLine());
+                    if(valorTransferencia> saldo[indexParaValidar])
+                    {
+                        Console.WriteLine("Seu saldo não é o suficiente para fazer esta transferência");
+                    }
+                    else
+                    {
+                        saldo[indexParaTranferir] += valorTransferencia;
+                        saldo[indexParaValidar] -= valorTransferencia;
+                        Console.WriteLine("Transferencia realizada com sucesso!");
+                        Console.WriteLine($"Saldo atual: {saldo[indexParaValidar]:F2} ");
+                    }
+                }
+            }
+        }
+
+    
     
 }
 
